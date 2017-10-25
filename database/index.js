@@ -1,4 +1,3 @@
-// const fake = require('../example_data/users.js');
 const faker = require('faker');
 const shortid = require('shortid');
 
