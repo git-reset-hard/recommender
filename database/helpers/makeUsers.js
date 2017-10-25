@@ -15,9 +15,9 @@ const generateUsers = (num) => {
         "openness": Math.random(),
         "hometown_latitude": faker.address.latitude(),
         "hometown_longitude": faker.address.longitude(),
-        "personality": [Math.random(), Math.random(), Math.random(), Math.random(), Math.random()],
-        "needs": [Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random()],
-        "values": [Math.random(), Math.random(), Math.random(), Math.random(), Math.random(),Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random(), Math.random()]
+        "personality": Array.from({length: 5}, () => Math.random()),
+        "needs": Array.from({length: 12}, () => Math.random()),
+        "values": Array.from({length: 12}, () => Math.random()),
         });
   }
   return users;
@@ -28,7 +28,8 @@ const fields = ['customer_id', 'star_pref', 'distance_pref', 'price_pref', 'open
 let fake_users = generateUsers(50000);
 let csv = json2csv({ data: fake_users, fields: fields });
 
-fs.writeFile('../example_data/users.csv', csv, function(err) {
+// from helpers folder
+fs.writeFile('../../example_data/users.csv', csv, (err) => {
   if (err) throw err;
   console.log('file saved');
 });
