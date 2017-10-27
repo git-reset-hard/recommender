@@ -1,4 +1,4 @@
-const db = require('../index';
+const db = require('../index');
 
 const categories = [
    'afghani',
@@ -21,14 +21,13 @@ const categories = [
    'brazilian'
 ]
 
-const q = `
-MERGE (:Category { name: ${c} })
-CREATE INDEX ON :Category(name)
-`
-var createCategories = () => {
+const createCategories = () => {
   categories.forEach(c => {
-    db.runQuery(q);
-  })
+    db.runQuery(`MERGE (:Category { name: '${c}' })`);
+  });
 }
 
 createCategories();
+// CREATE INDEX ON :Category(name)
+
+module.exports.categories = categories;

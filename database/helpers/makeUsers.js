@@ -36,6 +36,8 @@ const batchCSV = `
 USING PERIODIC COMMIT 1000
 LOAD CSV WITH HEADERS FROM 'file:////Users/administrator/Documents/HackReactor/HRSF81/recommender/example_data/users.csv' AS line
 MERGE (:User {user_id: line.user_id})
+CREATE CONSTRAINT ON (u:User) ASSERT u.id IS UNIQUE
+CREATE INDEX ON :User(user_id)
 ON CREATE SET {
   star_pref: line.star_pref,
   distance_pref: line.distance_pref,
@@ -48,8 +50,6 @@ ON CREATE SET {
   values: line.values,
   likes: line.likes
 }
-CREATE CONSTRAINT ON (u:User) ASSERT u.id IS UNIQUE
-CREATE INDEX ON :User(user_id)
 `
 // merge restaurant from likes
 // merge relationship between users and restaurants

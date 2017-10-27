@@ -3,6 +3,7 @@ const fs = require('fs');
 const shortid = require('shortid');
 const json2csv = require('json2csv');
 const db = require('../index');
+const cat = require('./makeCategories')
 // Total number of restaurants inserted is NUM_OF_RESTS * CHUNK_SIZE
 const NUM_OF_RESTS = 50;
 const CHUNK_SIZE = 1;
@@ -18,17 +19,7 @@ const generateRests = (num) => {
     rests.push({
         "restaurant_id": id,
         "is_closed": Math.round(Math.random()),
-        "categories": {
-          mexican: 1,
-          japanese: 0,
-          sandwiches: 1,
-          french: 0,
-          korean: 0,
-          take_out: 1
-        },
-        // testing length of 10
-        "catArray": Array.from({length: 10}, () => Math.round(Math.random())),
-        "cats": 'sandwiches',
+        "category": cat.categories[Math.floor((Math.random() * 100) % cat.categories.length)],
         "rating": Math.floor(((Math.random() * 10) % 5 ) + 1),
         "latitude": faker.address.latitude(),
         "longitude": faker.address.longitude(),
@@ -39,7 +30,7 @@ const generateRests = (num) => {
   }
   return rests;
 }
-const fields = ['restaurant_id', 'is_closed', 'categories', 'catArray', 'rating', 'latitude', 'longitude', 'city', 'zip', 'price'];
+const fields = ['restaurant_id', 'is_closed', 'category', 'rating', 'latitude', 'longitude', 'city', 'zip', 'price'];
 
 const batchCSV = `
 USING PERIODIC COMMIT 1000
@@ -49,14 +40,14 @@ CREATE (:Rests {
   is_closed: line.is_closed,
   categories: line.categories,
   catArray: line.catArray,
+  category: line.category,
   rating: line.rating,
   latitude: line.latitude,
   longitude: line.longitude,
   price: line.price,
   likes: line.likes
-}
-CREATE CONSTRAINT ON (r:Rests) ASSERT r.id IS UNIQUE
-)`
+})`
+// CREATE CONSTRAINT ON (r:Rests) ASSERT r.restaurant_id IS UNIQUE
 
 const writeRests = (chunks) => {
   for (let i = 0; i < chunks; i++) {
