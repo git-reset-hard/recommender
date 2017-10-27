@@ -35,19 +35,19 @@ const fields = ['restaurant_id', 'is_closed', 'category', 'rating', 'latitude', 
 const batchCSV = `
 USING PERIODIC COMMIT 1000
 LOAD CSV WITH HEADERS FROM 'file:////Users/administrator/Documents/HackReactor/HRSF81/recommender/example_data/rests.csv' AS line
-CREATE (:Rests {
+CREATE (r:Rests {
   restaurant_id: line.restaurant_id,
   is_closed: line.is_closed,
-  categories: line.categories,
-  catArray: line.catArray,
   category: line.category,
   rating: line.rating,
   latitude: line.latitude,
   longitude: line.longitude,
-  price: line.price,
-  likes: line.likes
-})`
-// CREATE CONSTRAINT ON (r:Rests) ASSERT r.restaurant_id IS UNIQUE
+  city: line.city,
+  zip: line.zip,
+  price: line.price
+})
+WITH line
+MERGE (:City { name: line.city})`
 
 const writeRests = (chunks) => {
   for (let i = 0; i < chunks; i++) {

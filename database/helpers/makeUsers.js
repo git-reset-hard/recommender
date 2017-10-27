@@ -10,6 +10,7 @@ const NUM_OF_WRITES = 1;
 const generateUsers = (num) => {
   // Assume every user likes 10 restaurants
   const restaurants = Array.from({length: 10}, () => rest.restaurants[Math.floor((Math.random() * 100) % rest.restaurants.length)])
+  console.log(restaurants);
   let users = [];
   for (let i = 0; i < num; i++) {
     users.push({
@@ -35,10 +36,8 @@ const fields = ['user_id', 'star_pref', 'distance_pref', 'price_pref', 'openness
 const batchCSV = `
 USING PERIODIC COMMIT 1000
 LOAD CSV WITH HEADERS FROM 'file:////Users/administrator/Documents/HackReactor/HRSF81/recommender/example_data/users.csv' AS line
-MERGE (:User {user_id: line.user_id})
-CREATE CONSTRAINT ON (u:User) ASSERT u.id IS UNIQUE
-CREATE INDEX ON :User(user_id)
-ON CREATE SET {
+CREATE (:User {
+  user_id: line.user_id,
   star_pref: line.star_pref,
   distance_pref: line.distance_pref,
   price_pref: line.price_pref,
@@ -49,8 +48,9 @@ ON CREATE SET {
   needs: line.needs,
   values: line.values,
   likes: line.likes
-}
-`
+})`
+// CREATE CONSTRAINT ON (u:User) ASSERT u.id IS UNIQUE
+// CREATE INDEX ON :User(user_id)
 // merge restaurant from likes
 // merge relationship between users and restaurants
 
