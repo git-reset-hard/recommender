@@ -3,30 +3,26 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "dependencies": {
+    "faker": "^4.1.0",
+    "json2csv": "^3.11.5",
+    "neo4j-driver": "^1.5.0",
+    "node-jq": "^0.7.0",
+    "papaparse": "^4.3.6",
+    "shortid": "^2.2.8"
+  },
+  "devDependencies": {},
   "scripts": {
-    "test": "npm run test"
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/git-reset-hard/recommender.git"
   },
-  "keywords": [
-    "recommendation",
-    "graph",
-    "database"
-  ],
-  "author": "'CV Smith'",
-  "license": "MIT",
+  "author": "",
+  "license": "ISC",
   "bugs": {
     "url": "https://github.com/git-reset-hard/recommender/issues"
   },
-  "homepage": "https://github.com/git-reset-hard/recommender#readme",
-  "dependencies": {
-    "faker": "^4.1.0",
-    "json2csv": "^3.11.5",
-    "neo4j": "^2.0.0-RC2",
-    "neo4j-driver": "^1.5.0",
-    "node-jq": "^0.7.0",
-    "shortid": "^2.2.8"
-  }
+  "homepage": "https://github.com/git-reset-hard/recommender#readme"
 }
