@@ -2,7 +2,6 @@ const faker = require('faker');
 const fs = require('fs');
 const shortid = require('shortid');
 const json2csv = require('json2csv');
-const papa = require('papaparse');
 const db = require('../index');
 const rest = require('./makeRests');
 const CHUNK_SIZE = 5;
