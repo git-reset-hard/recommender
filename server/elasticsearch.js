@@ -12,70 +12,11 @@ client.ping({
     console.log('All is well');
   }
 });
-// client.deleteByQuery({
-//   index: 'query'
-// }, function (error) {
-//   if (error) {
-//     console.trace('elasticsearch index delete error');
-//   } else {
-//     console.log('elasticsearch index deleted');
-//   }
-// });
-// client.create({
-//   index: 'newmap',
-//   type: 'type1',
-//   id: 1,
-//   body: {
-//     testLocation: { lat: 30, lon: -75 },
-//   }
-// }, function (error) {
-//   if (error) {
-//     console.trace('error with post');
-//   } else {
-//     console.log('post was good');
-//   }
-// });
-// client.create({
-//   index: 'newmap',
-//   type: 'item',
-//   id: '1',
-//   body: {
-//     restaurantId: '1',
-//     restaurantName: 'Chipotle',
-//     address: '123 Main St',
-//     city: 'Boston',
-//     zipcode: '02453',
-//     phone: '123-232-1233',
-//     price: '3',
-//     rating: '5',
-//     tags: 'mexican, fastfood, burritos, taco'
-//   }
-// })
-//   .then((response) => {
-//     console.log('insertion successful ', response);
-//   })
-//   .catch((err) => {
-//     console.log('insertion error ', error);
-//   });
-// client.search({
-//   index: 'restaurant',
-//   q: 'tags:ipsum'
-// })
-//   .then((response) => {
-//     console.log('query successful ', response.hits.hits[9]);
-//   })
-//   .catch((err) => {
-//     console.log('query error ', error);
-//   });
-// client.delete({
-//   index: 'restaurant',
-//   type: 'item',
-//   id: '1'
-// })
-//   .then((response) => {
-//     console.log('delete successful ', response);
-//   })
-//   .catch((err) => {
-//     console.log('delete error ', error);
-//   });
+
+// MATCH (n:User)
+// OPTIONAL MATCH (n)-[r]-()
+// call apoc.es.post("https://search-recommender-xld7vndlcrik5c5tmqqetf6lda.us-west-1.es.amazonaws.com","recommender","user",toString(id(n)),null,{openness:n.openness, agreeableness:n.agreeableness, conscientiousness:n.conscientiousness,achievement:n.achievement,extraversion:n.extraversion}) yield value
+// return *
+
+
 module.exports = client;
