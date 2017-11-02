@@ -8,14 +8,12 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 
 app.get('/list', (req, res) => {
-  // const {user_id, location, category} = req.query;
-  db.getList('joe').then(result => {
+  const {userId, location, serchTerm} = req.query;
+  db.findList(userId, location, searchTerm).then(result => {
     db.session.close();
-    const singleRecord = result.records[0];
-    const createdNodeId = singleRecord.get(0);
-    console.log('single record', singleRecord);
-    console.log('Matched created node with id: ' + createdNodeId);
-    res.json(createdNodeId);
+    // const singleRecord = result.records[0];
+    // const createdNodeId = singleRecord.get(0);
+    res.json(result);
   });
 })
 
