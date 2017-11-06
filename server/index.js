@@ -8,12 +8,13 @@ app.use(bodyParser.urlencoded({extended: false}));
 app.use(bodyParser.json());
 
 app.get('/list', (req, res) => {
-  const {userId, location, serchTerm} = req.query;
+  const {userId, location, searchTerm} = req.query;
   db.findList(userId, location, searchTerm).then(result => {
+    console.log('result' + result);
+    res.json(result);
     db.session.close();
     // const singleRecord = result.records[0];
     // const createdNodeId = singleRecord.get(0);
-    res.json(result);
   });
 })
 
