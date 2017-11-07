@@ -15,7 +15,9 @@
   },
   "devDependencies": {},
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server/index.js node server/elasticsearch.js node helpers/makeCategories.js",
+    "seedCategories": "node helpers/makeCategories.js"
   },
   "repository": {
     "type": "git",

@@ -1,20 +1,25 @@
 const faker = require('faker');
 const fs = require('fs');
-const shortid = require('shortid');
 const json2csv = require('json2csv');
-const db = require('../index');
 const cat = require('./makeCategories')
 // Total number of restaurants inserted is NUM_OF_RESTS * CHUNK_SIZE
-const NUM_OF_RESTS = 50;
+const NUM_OF_RESTS = 5000;
+const NUM_OF_ZIPS = 500;
 const CHUNK_SIZE = 1;
+faker.locale = "en_US";
 
 // use this to make sure users like restaurants that actually exist
 let restaurants = [];
+let zips = [];
+
+for (let i = 0; i < NUM_OF_ZIPS; i++) {
+  zips.push(faker.address.zipCode());
+};
 
 const generateRests = (num) => {
   let rests = [];
   for (let i = 0; i < num; i++) {
-    let id = shortid.generate();
+    let id = Math.floor(Math.random() * 1000000);
     restaurants.push(id);
     rests.push({
         "restaurant_id": id,
@@ -24,7 +29,7 @@ const generateRests = (num) => {
         "latitude": faker.address.latitude(),
         "longitude": faker.address.longitude(),
         "city": faker.address.city(),
-        "zip": faker.address.zipCode(),
+        "zip": zips[Math.floor((Math.random() * 100) % zips.length)],
         "price": Math.floor(((Math.random() * 10) % 4 ) + 1)
       });
   }
@@ -32,38 +37,20 @@ const generateRests = (num) => {
 }
 const fields = ['restaurant_id', 'is_closed', 'category', 'rating', 'latitude', 'longitude', 'city', 'zip', 'price'];
 
-const batchCSV = `
-USING PERIODIC COMMIT 1000
-LOAD CSV WITH HEADERS FROM 'file:////Users/administrator/Documents/HackReactor/HRSF81/recommender/example_data/rests.csv' AS line
-CREATE (r:Rests {
-  restaurant_id: line.restaurant_id,
-  is_closed: line.is_closed,
-  category: line.category,
-  rating: line.rating,
-  latitude: line.latitude,
-  longitude: line.longitude,
-  city: line.city,
-  zip: line.zip,
-  price: line.price
-})
-WITH line
-MERGE (:City { name: line.city})`
-
+const writeStream = fs.createWriteStream('/import/rests.csv', {flags: 'a'});
 const writeRests = (chunks) => {
   for (let i = 0; i < chunks; i++) {
     let fake_rests = generateRests(NUM_OF_RESTS);
     let csv = json2csv({ data: fake_rests, fields: fields });
-    // from helpers folder
-    fs.appendFileSync('../../example_data/rests.csv', csv, (err) => {
-      if (err) throw err;
-      console.log('file saved');
-    });
+    writeStream.write(csv)
   }
-  db.runQuery(batchCSV);
+  writeStream.on('finish', () => {
+    console.log('done with restaurants');
+    writeStream.close();
+  });
   // // TODO: delete file upon complete
-  return;
 }
 
-console.log(writeRests(CHUNK_SIZE));
+writeRests(CHUNK_SIZE);
 
 module.exports.restaurants = restaurants;
