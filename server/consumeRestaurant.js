@@ -7,18 +7,14 @@ const consumeRestaurant = Consumer.create({
   queueUrl: 'https://sqs.us-west-1.amazonaws.com/213354805027/restaurantProfileToRecommender',
   handleMessage: (message, done) => {
     let msg = JSON.parse(message.Body);
-    console.log(msg);
+    // console.log(msg);
     db.insertRest(msg)
       .then(() => {
         done();
-    //     db.session.close(() => {
-    //       console.log('Restaurant created, session closed');
-    //     });
+        db.session.close();
       })
       .catch(err => console.error(err));
-    //INSERT INTO DB THEN CALL DONE
   }
-  // sqs: new AWS.SQS()
 });
 
 consumeRestaurant.on('error', (err) => {

@@ -3,6 +3,7 @@ const neo = require('../config/neo.js')
 const driver = neo4j.driver("bolt://localhost:7687", neo4j.auth.basic("neo4j", neo.neoPassword), {maxTransactionRetryTime: 30000});
 const session = driver.session();
 
+// get recommendation list for app server
 const findList = (userId, location, searchTerm) => {
   const q = `
   MATCH (r:Restaurant)-[:IN_CATEGORY]->(c:Category),
@@ -18,8 +19,6 @@ const findList = (userId, location, searchTerm) => {
   `
   return session.readTransaction(tx => tx.run(q));
 };
-// update user from sqs
-
 
 // insert restaurant from sqs
 const insertRest = (message) => {
@@ -37,19 +36,15 @@ const insertRest = (message) => {
   MERGE (z:Zip { code: $zip})
   `
   const z = `
+  MATCH (r:Restaurant {restaurant_id: $restaurant_id}),
+  (z:Zip { code: $zip})
   MERGE (r)-[:IN_ZIP]->(z)
   `
-  // WITH $zip AS zip
-  // WITH r
-  // MERGE (r)-[:IN_ZIP]->(:Zip {code: $zip})
-
-  // const z = `MERGE (:Zip { code: $zip})`
-  // MERGE (r)-[:IN_ZIP]->(:Zip { code: zip})
-  // const rc = `MATCH (r:Restaurant{restaurant_id: $restaurant_id})
-  // WITH r
-  // UNWIND r.category AS cat
-  // MATCH (c:Category{name:cat})
-  // MERGE (r)-[:IN_CATEGORY]->(c)`
+  const c = `MATCH (r:Restaurant {restaurant_id: $restaurant_id})
+  WITH r
+  UNWIND r.category AS category
+  MATCH (c:Category{name:category})
+  MERGE (r)-[:IN_CATEGORY]->(c)`
 
   return session.writeTransaction(tx => tx.run(r,
     {
@@ -63,57 +58,54 @@ const insertRest = (message) => {
       'zip': message.zipcode,
       'price': message.price
     })
-    // .then(() => tx.run(z, {'zip': message.zipcode}))
-    // .then(() => tx.run(rc, {'restaurant_id': message.id}))
+    .then(() => tx.run(z, {'zip': message.zipcode, 'restaurant_id': message.id}))
+    .then(() => tx.run(c, {'restaurant_id': message.id}))
   );
-}
+};
 
-const updateUser = (msgUserObj) => {
+const updateUser = (message) => {
   const update = `
-  MERGE (u:User {user_id: $user_id})
-  SET
-    u.star_pref = $star_pref,
-    u.distance_pref = $distance_pref,
-    u.price_pref = $price_pref,
-    u.hometown_latitude = $hometown_latitude,
-    u.hometown_longitude = $hometown_longitude,
-    u.zip = $zip,
-    u.openness = $openness,
-    u.conscientiousness = $conscientiousness,
-    u.achievement = $achievement,
-    u.extraversion = $extraversion,
-    u.agreeableness = $agreeableness,
-    u.likes = apoc.convert.fromJsonList($likes)
+    MERGE (u:User {user_id: $user_id})
+    SET
+      u.star_pref = $star_pref,
+      u.distance_pref = $distance_pref,
+      u.price_pref = $price_pref,
+      u.hometown_latitude = $hometown_latitude,
+      u.hometown_longitude = $hometown_longitude,
+      u.zip = $zip,
+      u.openness = $openness,
+      u.conscientiousness = $conscientiousness,
+      u.achievement = $achievement,
+      u.extraversion = $extraversion,
+      u.agreeableness = $agreeableness,
+      u.likes = apoc.convert.fromJsonList($likes)
   `
   const relate = `
-  MATCH (u:User {user_id: $user_id})
-  UNWIND u.likes AS like
-  MATCH (r:Restaurant {restaurant_id:toString(like)})
-  MERGE (u)-[:LIKES]->(r)
+    MATCH (u:User {user_id: $user_id})
+    UNWIND u.likes AS like
+    MATCH (r:Restaurant {restaurant_id:toString(like)})
+    MERGE (u)-[:LIKES]->(r)
   `
-  return session.writeTransaction(tx => {
-    tx.run(update)
-    .then(() => {
-      tx.run(relate)
+  return session.writeTransaction(tx => tx.run(update,
+    {
+      'user_id': message.numId,
+      'star_pref': message.star_pref,
+      'distance_pref': message.distance_pref,
+      'price_pref': message.price_pref,
+      'hometown_latitude': message.latitude,
+      'hometown_longitude': message.longitude,
+      'zip': message.zip,
+      'openness': message.openness,
+      'conscientiousness': message.conscientiousness,
+      'achievement': message.achievement,
+      'extraversion': message.extraversion,
+      'agreeableness': message.agreeableness,
+      'likes': message.liked_restaurants
     })
-  });
-}
-// session.run(r,
-//   {
-//     'restaurant_id': message.id,
-//     'is_closed': message.is_closed,
-//     'category': message.category,
-//     'rating': message.rating,
-//     'latitude': message.latitude,
-//     'longitude': message.longitude,
-//     'city': message.city,
-//     'zip': message.zip,
-//     'price': message.price
-//   }).then(() => {
-//   session.close(() => {
-//     console.log('Restaurant created, session closed');
-//   });
-// });
+    .then(() => tx.run(relate, {'user_id': message.user_id}))
+  );
+};
+
 // run single query
 const runQuery = (query) => {
   session
@@ -130,9 +122,10 @@ const runQuery = (query) => {
 }
 
 module.exports = {
-  // driver,
   session,
+  driver,
   findList,
+  insertRest,
+  updateUser,
   runQuery,
-  insertRest
 }
