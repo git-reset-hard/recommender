@@ -10,11 +10,8 @@ app.use(bodyParser.json());
 app.get('/list', (req, res) => {
   const {userId, location, searchTerm} = req.query;
   db.findList(userId, location, searchTerm).then(result => {
-    console.log('result' + result);
-    res.json(result);
+      res.json(result.records[0]['_fields']);
     db.session.close();
-    // const singleRecord = result.records[0];
-    // const createdNodeId = singleRecord.get(0);
   });
 })
 

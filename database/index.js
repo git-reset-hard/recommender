@@ -14,11 +14,60 @@ const findList = (userId, location, searchTerm) => {
   	    AND z.code = '${location}'
   WITH r.restaurant_id AS restaurant
   RETURN restaurant
+  LIMIT 10
   `
   return session.readTransaction(tx => tx.run(q));
 };
-
 // update user from sqs
+
+
+// insert restaurant from sqs
+const insertRest = (message) => {
+  const r = `
+  MERGE (r:Restaurant {restaurant_id: $restaurant_id})
+  SET
+  r.is_closed = $is_closed,
+  r.category = $category,
+  r.rating = $rating,
+  r.latitude = $latitude,
+  r.longitude = $longitude,
+  r.city = $city,
+  r.zip = $zip,
+  r.price = $price
+  MERGE (z:Zip { code: $zip})
+  `
+  const z = `
+  MERGE (r)-[:IN_ZIP]->(z)
+  `
+  // WITH $zip AS zip
+  // WITH r
+  // MERGE (r)-[:IN_ZIP]->(:Zip {code: $zip})
+
+  // const z = `MERGE (:Zip { code: $zip})`
+  // MERGE (r)-[:IN_ZIP]->(:Zip { code: zip})
+  // const rc = `MATCH (r:Restaurant{restaurant_id: $restaurant_id})
+  // WITH r
+  // UNWIND r.category AS cat
+  // MATCH (c:Category{name:cat})
+  // MERGE (r)-[:IN_CATEGORY]->(c)`
+
+  return session.writeTransaction(tx => tx.run(r,
+    {
+      'restaurant_id': message.id,
+      'is_closed': message.is_closed,
+      'category': message.categories,
+      'rating': message.rating,
+      'latitude': message.latitude,
+      'longitude': message.longitude,
+      'city': message.city,
+      'zip': message.zipcode,
+      'price': message.price
+    })
+    // .then(() => tx.run(z, {'zip': message.zipcode}))
+    // .then(() => tx.run(rc, {'restaurant_id': message.id}))
+  );
+}
+
 const updateUser = (msgUserObj) => {
   const update = `
   MERGE (u:User {user_id: $user_id})
@@ -49,7 +98,22 @@ const updateUser = (msgUserObj) => {
     })
   });
 }
-
+// session.run(r,
+//   {
+//     'restaurant_id': message.id,
+//     'is_closed': message.is_closed,
+//     'category': message.category,
+//     'rating': message.rating,
+//     'latitude': message.latitude,
+//     'longitude': message.longitude,
+//     'city': message.city,
+//     'zip': message.zip,
+//     'price': message.price
+//   }).then(() => {
+//   session.close(() => {
+//     console.log('Restaurant created, session closed');
+//   });
+// });
 // run single query
 const runQuery = (query) => {
   session
@@ -69,5 +133,6 @@ module.exports = {
   // driver,
   session,
   findList,
-  runQuery
+  runQuery,
+  insertRest
 }
