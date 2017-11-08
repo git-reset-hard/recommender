@@ -1,19 +1,18 @@
-const faker = require('faker');
+const faker = require('faker/locale/en_US');
 const fs = require('fs');
 const json2csv = require('json2csv');
 const cat = require('./makeCategories')
 // Total number of restaurants inserted is NUM_OF_RESTS * CHUNK_SIZE
 const NUM_OF_RESTS = 5000;
-const NUM_OF_ZIPS = 500;
-const CHUNK_SIZE = 1;
-faker.locale = "en_US";
+const NUM_OF_ZIPS = 5000;
+const CHUNK_SIZE = 100;
 
 // use this to make sure users like restaurants that actually exist
 let restaurants = [];
 let zips = [];
 
 for (let i = 0; i < NUM_OF_ZIPS; i++) {
-  zips.push(faker.address.zipCode());
+  zips.push(faker.address.zipCode().slice(0, 5));
 };
 
 const generateRests = (num) => {
@@ -24,7 +23,7 @@ const generateRests = (num) => {
     rests.push({
         "restaurant_id": id,
         "is_closed": Math.round(Math.random()),
-        "category": cat.categories[Math.floor((Math.random() * 100) % cat.categories.length)],
+        "category": Array.from({length: 3}, () => cat.categories[Math.floor((Math.random() * 100) % cat.categories.length)]),
         "rating": Math.floor(((Math.random() * 10) % 5 ) + 1),
         "latitude": faker.address.latitude(),
         "longitude": faker.address.longitude(),
@@ -37,7 +36,7 @@ const generateRests = (num) => {
 }
 const fields = ['restaurant_id', 'is_closed', 'category', 'rating', 'latitude', 'longitude', 'city', 'zip', 'price'];
 
-const writeStream = fs.createWriteStream('/import/rests.csv', {flags: 'a'});
+const writeStream = fs.createWriteStream('import/rests.csv', {flags: 'a'});
 const writeRests = (chunks) => {
   for (let i = 0; i < chunks; i++) {
     let fake_rests = generateRests(NUM_OF_RESTS);

@@ -1,12 +1,20 @@
-const faker = require('faker');
+const faker = require('faker/locale/en_US');
 const fs = require('fs');
 const json2csv = require('json2csv');
+const zipcodes = require('zipcodes');
+const PD = require("probability-distributions");
 const rest = require('./makeRests');
-const CHUNK_SIZE = 500;
+const CHUNK_SIZE = 2000;
 const NUM_OF_WRITES = 2000;
-faker.locale = "en_US";
+
 
 const generateUsers = (num) => {
+  const traitO = PD.rnorm(num, .5, .15);
+  const traitC = PD.rnorm(num, .5, .15);
+  const traitAc = PD.rnorm(num, .5, .15);
+  const traitE = PD.rnorm(num, .5, .15);
+  const traitAg = PD.rnorm(num, .5, .15);
+
   // Assume every user likes 10 restaurants
   const restaurants = Array.from({length: 10}, () => rest.restaurants[Math.floor((Math.random() * 100) % rest.restaurants.length)])
   let users = [];
@@ -16,25 +24,23 @@ const generateUsers = (num) => {
         "star_pref": Math.random(),
         "distance_pref": Math.random(),
         "price_pref": Math.random(),
-        "hasReview": true,
         "hometown_latitude": faker.address.latitude(),
         "hometown_longitude": faker.address.longitude(),
-        "city": faker.address.city(),
-        "personality": Array.from({length: 5}, () => Math.random()),
-        "openness":Math.random(),
-        "conscientiousness":Math.random(),
-        "achievement":Math.random(),
-        "extraversion":Math.random(),
-        "agreeableness": Math.random(),
+        "zip": faker.address.zipCode(),
+        "openness":Math.abs(traitO[i]),
+        "conscientiousness":Math.abs(traitC[i]),
+        "achievement":Math.abs(traitAc[i]),
+        "extraversion":Math.abs(traitE[i]),
+        "agreeableness": Math.abs(traitAg[i]),
         "likes": restaurants
       });
   }
   return users;
 }
 
-const fields = ['user_id', 'star_pref', 'distance_pref', 'price_pref', 'hasReview', 'hometown_latitude', 'hometown_longitude', 'hometown_longitude', 'city', 'personality', 'openness', 'conscientiousness', 'achievement', 'extraversion', 'agreeableness', 'likes'];
+const fields = ['user_id', 'star_pref', 'distance_pref', 'price_pref', 'hometown_latitude', 'hometown_longitude', 'zip', 'openness', 'conscientiousness', 'achievement', 'extraversion', 'agreeableness', 'likes'];
 
-const writeStream = fs.createWriteStream('/import/users.csv', {flags: 'a'});
+const writeStream = fs.createWriteStream('import/users.csv', {flags: 'a'});
 const writeUsers = (writes) => {
   for (let i = 0; i < writes; i++) {
     let fake_users = generateUsers(CHUNK_SIZE);
@@ -44,9 +50,8 @@ const writeUsers = (writes) => {
   writeStream.on('finish', () => {
     console.log('done with users');
     writeStream.close();
-  })
+  });
   // db.runQuery(batchCSV);
-  return;
 }
 
 writeUsers(NUM_OF_WRITES);
