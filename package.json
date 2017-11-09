@@ -15,6 +15,8 @@
     "probability-distributions": "^0.9.1",
     "shortid": "^2.2.8",
     "sqs-consumer": "^3.8.0",
+    "winston": "^3.0.0-rc1",
+    "winston-elasticsearch": "^0.5.3",
     "zipcodes": "^5.1.0"
   },
   "devDependencies": {},
